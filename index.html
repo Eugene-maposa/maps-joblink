@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maps-Job-Link - Bulawayo City</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places,geometry"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/map.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">Maps-Job-Link</div>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#jobs">Available Jobs</a></li>
+            <li><a href="#employees">Available Employees</a></li>
+            <li><a href="#about">About Us</a></li>
+            <li><button class="admin-btn" onclick="showAdminLogin()">Admin Login</button></li>
+        </ul>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Welcome to Maps-Job-Link</h1>
+            <p>Connecting Employers with Local Talent in Bulawayo City</p>
+            <div class="cta-buttons">
+                <button onclick="showRegistration('employer')">Register as Employer</button>
+                <button onclick="showRegistration('employee')">Register as Employee</button>
+            </div>
+            <div class="login-section">
+                <p class="login-text">Already have an account?</p>
+                <button class="hero-login-btn" onclick="showUserLogin()">Login</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Registration Modal -->
+    <div id="registrationModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">Registration</h2>
+            <form id="registrationForm" onsubmit="handleRegistration(event)">
+                <input type="text" name="fullName" placeholder="Full Name" required>
+                <input type="email" name="email" placeholder="Email" required>
+                
+                <!-- Password field with visibility toggle -->
+                <div class="password-field">
+                    <input type="password" name="password" id="password" placeholder="Password" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                
+                <!-- Confirm Password field with visibility toggle -->
+                <div class="password-field">
+                    <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                
+                <input type="tel" name="phone" placeholder="Phone Number" required>
+                <input type="text" name="address" placeholder="Address" required>
+                
+                <!-- ID Document Upload Section -->
+                <div class="upload-section">
+                    <label for="idDocument">Upload ID Document (PNG, JPG, or PDF)*</label>
+                    <input type="file" id="idDocument" name="idDocument" 
+                        accept=".png,.jpg,.jpeg,.pdf" required
+                        onchange="previewFile(this)">
+                    <div id="filePreview" class="file-preview"></div>
+                    <p class="file-info">Maximum file size: 5MB</p>
+                </div>
+
+                <input type="hidden" name="type" id="registrationType">
+                <div id="employerFields" style="display: none;">
+                    <input type="text" name="companyName" placeholder="Company Name">
+                    <input type="text" name="businessType" placeholder="Business Type">
+                    <!-- Business Registration Document -->
+                    <div class="upload-section">
+                        <label for="businessDoc">Upload Business Registration (PDF)*</label>
+                        <input type="file" id="businessDoc" name="businessDoc" 
+                            accept=".pdf" 
+                            onchange="previewFile(this)">
+                        <div id="businessDocPreview" class="file-preview"></div>
+                    </div>
+                </div>
+                <div id="employeeFields" style="display: none;">
+                    <input type="text" name="skills" placeholder="Skills">
+                    <input type="text" name="experience" placeholder="Experience">
+                </div>
+                <button type="submit">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Services Section -->
+    <section id="services" class="services">
+        <h2>Our Services</h2>
+        <div class="services-grid">
+            <div class="service-card">
+                <i class="fas fa-user-tie"></i>
+                <h3>For Employers</h3>
+                <p>Post jobs and find qualified local talent</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-users"></i>
+                <h3>For Employees</h3>
+                <p>Find part-time jobs in your area</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-map-marker-alt"></i>
+                <h3>Location Based</h3>
+                <p>Find opportunities near you</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Available Jobs Section -->
+    <section id="jobs" class="jobs">
+        <h2>Available Jobs</h2>
+        <div class="jobs-grid" id="jobsList">
+            <!-- Jobs will be dynamically added here -->
+        </div>
+    </section>
+
+    <!-- Available Employees Section -->
+    <section id="employees" class="employees">
+        <h2>Available Employees</h2>
+        <div class="employees-grid" id="employeesList">
+            <!-- Employees will be dynamically added here -->
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section id="about" class="about">
+        <h2>About Us</h2>
+        <div class="about-content">
+            <div class="about-text">
+                <h3>Our Mission</h3>
+                <p>Maps-Job-Link is dedicated to revolutionizing the job market in Bulawayo City by creating a seamless connection between employers and local talent. Our innovative platform combines location-based technology with a user-friendly interface to make finding part-time work opportunities and qualified employees easier than ever.</p>
+                
+                <h3>What We Offer</h3>
+                <ul class="about-features">
+                    <li><i class="fas fa-check-circle"></i> Real-time job matching based on location</li>
+                    <li><i class="fas fa-check-circle"></i> Verified employer and employee profiles</li>
+                    <li><i class="fas fa-check-circle"></i> Easy-to-use platform for both employers and job seekers</li>
+                    <li><i class="fas fa-check-circle"></i> Secure and reliable service</li>
+                </ul>
+            </div>
+
+            <!-- Team Members Section -->
+            <div class="team-section">
+                <h3>Our Leadership Team</h3>
+                <div class="team-grid">
+                    <div class="team-member">
+                        <i class="fas fa-user-circle"></i>
+                        <h4>Eugene Maposa</h4>
+                        <p>CEO & Founder</p>
+                        <p class="team-role">Visionary leader driving innovation in local employment solutions</p>
+                    </div>
+                    <div class="team-member">
+                        <i class="fas fa-user-circle"></i>
+                        <h4>Debra Mahwenyiwe</h4>
+                        <p>Software Adminstrator</p>
+                        <p class="team-role">Dedicated to connecting talent with opportunity</p>
+                    </div>
+                    <div class="team-member">
+                        <i class="fas fa-user-circle"></i>
+                        <h4>Charmaine Shoko</h4>
+                        <p>Software Developer</p>
+                        <p class="team-role">Committed to excellence in service delivery</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section id="map-section" class="map-section">
+        <div class="map-container">
+            <div class="map-controls">
+                <div class="search-box">
+                    <input id="location-search" type="text" placeholder="Search for locations...">
+                </div>
+                <div class="map-filters">
+                    <select id="job-type-filter">
+                        <option value="">All Job Types</option>
+                        <option value="full-time">Full Time</option>
+                        <option value="part-time">Part Time</option>
+                        <option value="contract">Contract</option>
+                    </select>
+                    <select id="distance-filter">
+                        <option value="">Any Distance</option>
+                        <option value="5">Within 5 km</option>
+                        <option value="10">Within 10 km</option>
+                        <option value="20">Within 20 km</option>
+                    </select>
+                </div>
+            </div>
+            <div id="map"></div>
+        </div>
+    </section>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAdminLogin()">&times;</span>
+            <h2>Admin Login</h2>
+            <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+                <input type="email" name="adminEmail" placeholder="Admin Email" required>
+                <div class="password-field">
+                    <input type="password" name="adminPassword" id="adminPassword" placeholder="Password" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('adminPassword')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Login Modal -->
+    <div id="userLoginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserLogin()">&times;</span>
+            <h2>Login to Your Account</h2>
+            <form id="userLoginForm" onsubmit="handleUserLogin(event)">
+                <div class="form-group">
+                    <label for="userEmail">Email</label>
+                    <input type="email" id="userEmail" name="userEmail" required>
+                </div>
+                <div class="form-group password-field">
+                    <label for="userPassword">Password</label>
+                    <input type="password" id="userPassword" name="userPassword" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('userPassword')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember"> Remember me
+                    </label>
+                    <a href="#" onclick="showForgotPassword()" class="forgot-password">Forgot Password?</a>
+                </div>
+                <button type="submit" class="login-submit-btn">
+                    <span class="btn-text">Login</span>
+                    <span class="btn-loader" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+                <div class="login-divider">
+                    <span>or</span>
+                </div>
+                <div class="social-login">
+                    <button type="button" class="google-login">
+                        <i class="fab fa-google"></i> Continue with Google
+                    </button>
+                    <button type="button" class="facebook-login">
+                        <i class="fab fa-facebook-f"></i> Continue with Facebook
+                    </button>
+                </div>
+                <p class="register-link">
+                    Don't have an account? 
+                    <a href="#" onclick="showRegistrationFromLogin()">Register Now</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard (Hidden by default) -->
+    <div id="adminDashboard" class="admin-dashboard" style="display: none;">
+        <div class="admin-header">
+            <h2>Admin Dashboard</h2>
+            <button onclick="logoutAdmin()" class="logout-btn">Logout</button>
+        </div>
+        <div class="admin-content">
+            <div class="admin-sidebar">
+                <ul>
+                    <li onclick="showAdminSection('registrations')" class="active">Pending Registrations</li>
+                    <li onclick="showAdminSection('employers')">Manage Employers</li>
+                    <li onclick="showAdminSection('employees')">Manage Employees</li>
+                    <li onclick="showAdminSection('jobs')">Manage Jobs</li>
+                    <li onclick="showAdminSection('reports')">Reports</li>
+                </ul>
+            </div>
+            <div class="admin-main">
+                <!-- Pending Registrations Section -->
+                <div id="registrationsSection" class="admin-section">
+                    <h3>Pending Registrations</h3>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Type</th>
+                                    <th>Documents</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pendingRegistrations">
+                                <!-- Registrations will be added here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Employers Section -->
+                <div id="employersSection" class="admin-section" style="display: none;">
+                    <h3>Manage Employers</h3>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Company Name</th>
+                                    <th>Contact Person</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employersList">
+                                <!-- Employers will be added here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Employees Section -->
+                <div id="employeesSection" class="admin-section" style="display: none;">
+                    <h3>Manage Employees</h3>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Skills</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeesList">
+                                <!-- Employees will be added here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Jobs Section -->
+                <div id="jobsSection" class="admin-section" style="display: none;">
+                    <h3>Manage Jobs</h3>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Employer</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobsList">
+                                <!-- Jobs will be added here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reports Section -->
+                <div id="reportsSection" class="admin-section" style="display: none;">
+                    <h3>System Reports</h3>
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <h4>Total Users</h4>
+                            <p class="report-number">0</p>
+                        </div>
+                        <div class="report-card">
+                            <h4>Active Jobs</h4>
+                            <p class="report-number">0</p>
+                        </div>
+                        <div class="report-card">
+                            <h4>Pending Approvals</h4>
+                            <p class="report-number">0</p>
+                        </div>
+                        <div class="report-card">
+                            <h4>Total Applications</h4>
+                            <p class="report-number">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Preview Modal -->
+    <div id="documentPreviewModal" class="modal">
+        <div class="modal-content document-preview-content">
+            <span class="close">&times;</span>
+            <h2>Document Preview</h2>
+            <div id="documentPreviewContainer"></div>
+        </div>
+    </div>
+
+    <!-- User Dashboard - Employer -->
+    <div id="employerDashboard" class="dashboard">
+        <div class="dashboard-header">
+            <h2>Employer Dashboard</h2>
+            <div class="user-controls">
+                <span class="user-name"></span>
+                <button onclick="logoutUser()" class="logout-btn">Logout</button>
+            </div>
+        </div>
+        <div class="dashboard-content">
+            <div class="dashboard-sidebar">
+                <ul>
+                    <li onclick="showDashboardSection('postJob')" class="active">Post New Job</li>
+                    <li onclick="showDashboardSection('myJobs')">My Job Posts</li>
+                    <li onclick="showDashboardSection('applications')">Applications</li>
+                    <li onclick="showDashboardSection('profile')">Company Profile</li>
+                </ul>
+            </div>
+            <div class="dashboard-main">
+                <!-- Post Job Section -->
+                <div id="postJobSection" class="dashboard-section">
+                    <h3>Post a New Job</h3>
+                    <form id="postJobForm" onsubmit="handleJobPost(event)">
+                        <input type="text" name="jobTitle" placeholder="Job Title" required>
+                        <textarea name="jobDescription" placeholder="Job Description" required></textarea>
+                        <div class="form-row">
+                            <select name="jobType" required>
+                                <option value="">Select Job Type</option>
+                                <option value="full-time">Full Time</option>
+                                <option value="part-time">Part Time</option>
+                                <option value="contract">Contract</option>
+                            </select>
+                            <input type="number" name="salary" placeholder="Salary (Optional)">
+                        </div>
+                        <div class="form-row">
+                            <input type="text" name="location" placeholder="Job Location" required>
+                            <button type="button" onclick="getCurrentLocation()">Use Current Location</button>
+                        </div>
+                        <div class="form-row">
+                            <input type="date" name="deadline" placeholder="Application Deadline" required>
+                        </div>
+                        <button type="submit">Post Job</button>
+                    </form>
+                </div>
+
+                <!-- My Jobs Section -->
+                <div id="myJobsSection" class="dashboard-section" style="display: none;">
+                    <h3>My Job Posts</h3>
+                    <div class="jobs-list" id="employerJobsList">
+                        <!-- Jobs will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Dashboard - Job Seeker -->
+    <div id="jobSeekerDashboard" class="dashboard">
+        <div class="dashboard-header">
+            <h2>Job Seeker Dashboard</h2>
+            <div class="user-controls">
+                <span class="user-name"></span>
+                <button onclick="logoutUser()" class="logout-btn">Logout</button>
+            </div>
+        </div>
+        <div class="dashboard-content">
+            <div class="dashboard-sidebar">
+                <ul>
+                    <li onclick="showDashboardSection('searchJobs')" class="active">Search Jobs</li>
+                    <li onclick="showDashboardSection('myApplications')">My Applications</li>
+                    <li onclick="showDashboardSection('savedJobs')">Saved Jobs</li>
+                    <li onclick="showDashboardSection('profile')">My Profile</li>
+                </ul>
+            </div>
+            <div class="dashboard-main">
+                <!-- Job Search Section -->
+                <div id="searchJobsSection" class="dashboard-section">
+                    <h3>Search Jobs</h3>
+                    <div class="search-filters">
+                        <input type="text" id="jobSearchKeyword" placeholder="Job Title or Keywords">
+                        <select id="jobTypeFilter">
+                            <option value="">All Job Types</option>
+                            <option value="full-time">Full Time</option>
+                            <option value="part-time">Part Time</option>
+                            <option value="contract">Contract</option>
+                        </select>
+                        <div class="location-filter">
+                            <input type="text" id="locationFilter" placeholder="Location">
+                            <button onclick="useCurrentLocation()">Current Location</button>
+                        </div>
+                        <select id="distanceFilter">
+                            <option value="">Any Distance</option>
+                            <option value="5">Within 5 km</option>
+                            <option value="10">Within 10 km</option>
+                            <option value="20">Within 20 km</option>
+                        </select>
+                        <button onclick="searchJobs()" class="search-btn">Search</button>
+                    </div>
+                    <div class="search-results" id="jobSearchResults">
+                        <!-- Search results will be populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- My Applications Section -->
+                <div id="myApplicationsSection" class="dashboard-section" style="display: none;">
+                    <h3>My Applications</h3>
+                    <div class="applications-list" id="userApplicationsList">
+                        <!-- Applications will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeForgotPassword()">&times;</span>
+            <h2>Reset Password</h2>
+            <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)">
+                <div class="form-group">
+                    <label for="resetEmail">Email Address</label>
+                    <input type="email" id="resetEmail" name="resetEmail" required>
+                </div>
+                <button type="submit" class="login-submit-btn">
+                    <span class="btn-text">Send Reset Link</span>
+                    <span class="btn-loader" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h4>Call/WhatsApp/SMS</h4>
+                            <p><a href="tel:+263775126513">+263 775 126 513</a></p>
+                            <p><a href="tel:+263713641507">+263 713 641 507</a></p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Email</h4>
+                            <p><a href="mailto:mapseujers@gmail.com">mapseujers@gmail.com</a></p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <h4>Business Hours</h4>
+                            <p>Monday - Friday: 8:00 AM - 5:00 PM</p>
+                            <p>Saturday: 9:00 AM - 1:00 PM</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <div class="social-links">
+                    <a href="mailto:mapseujers@gmail.com" title="Email Us"><i class="fas fa-envelope"></i></a>
+                    <a href="https://facebook.com/mapseujers" target="_blank" title="Follow us on Facebook"><i class="fab fa-facebook"></i></a>
+                    <a href="https://twitter.com/mapseujers" target="_blank" title="Follow us on Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="https://t.me/mapseujers" target="_blank" title="Join our Telegram"><i class="fab fa-telegram"></i></a>
+                </div>
+                <div class="newsletter">
+                    <h4>Subscribe to Our Newsletter</h4>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Enter your email">
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="footer-separator"></div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Maps-Job-Link. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loader">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading...</span>
+        </div>
+    </div>
+
+    <script>
+        // Registration Modal Functionality
+        const modal = document.getElementById('registrationModal');
+        const closeBtn = document.getElementsByClassName('close')[0];
+
+        function showRegistration(type) {
+            modal.style.display = 'block';
+            document.getElementById('modalTitle').textContent = `Register as ${type}`;
+            document.getElementById('employerFields').style.display = type === 'employer' ? 'block' : 'none';
+            document.getElementById('employeeFields').style.display = type === 'employee' ? 'block' : 'none';
+        }
+
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Google Maps Integration
+        function initMap() {
+            const bulawayo = { lat: -20.1325, lng: 28.6264 };
+            const map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 12,
+                center: bulawayo,
+            });
+        }
+
+        // Initialize map when page loads
+        window.onload = initMap;
+
+        // Admin Login Functionality
+        function showAdminLogin() {
+            document.getElementById('adminLoginModal').style.display = 'block';
+        }
+
+        function closeAdminLogin() {
+            document.getElementById('adminLoginModal').style.display = 'none';
+        }
+
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            const email = document.querySelector('#adminLoginForm input[type="email"]').value;
+            const password = document.querySelector('#adminLoginForm input[type="password"]').value;
+
+            if (email === 'mapseujers@gmail.com' && password === 'maps123') {
+                document.getElementById('adminLoginModal').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+
+        function logoutAdmin() {
+            document.getElementById('adminDashboard').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function showAdminSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.admin-section').forEach(s => s.style.display = 'none');
+            // Show selected section
+            document.getElementById(section + 'Section').style.display = 'block';
+            // Update active state in sidebar
+            document.querySelectorAll('.admin-sidebar li').forEach(li => li.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Close admin modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('adminLoginModal')) {
+                closeAdminLogin();
+            }
+        }
+
+        // Show loading overlay
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        // Hide loading overlay
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // Demo login credentials
+        document.addEventListener('DOMContentLoaded', () => {
+            const demoCredentials = document.createElement('div');
+            demoCredentials.className = 'demo-credentials';
+            demoCredentials.innerHTML = `
+                <p><strong>Demo Credentials:</strong></p>
+                <p>Employer: employer@example.com</p>
+                <p>Job Seeker: jobseeker@example.com</p>
+                <p>Password: any password will work</p>
+            `;
+            document.querySelector('.modal-content').appendChild(demoCredentials);
+        });
+
+        // Add new function for transitioning from login to registration
+        function showRegistrationFromLogin() {
+            // Close login modal
+            document.getElementById('userLoginModal').style.display = 'none';
+            // Show registration modal for job seeker by default
+            showRegistration('employee');
+        }
+
+        // Password visibility toggle function
+        function togglePassword(inputId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = passwordInput.nextElementSibling;
+            const toggleIcon = toggleButton.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.className = 'fas fa-eye';
+            }
+        }
+
+        // Forgot Password Functions
+        function showForgotPassword() {
+            document.getElementById('userLoginModal').style.display = 'none';
+            document.getElementById('forgotPasswordModal').style.display = 'block';
+        }
+
+        function closeForgotPassword() {
+            document.getElementById('forgotPasswordModal').style.display = 'none';
+        }
+
+        async function handleForgotPassword(event) {
+            event.preventDefault();
+            const email = document.getElementById('resetEmail').value;
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoader = submitBtn.querySelector('.btn-loader');
+
+            try {
+                // Show loading state
+                btnText.style.display = 'none';
+                btnLoader.style.display = 'block';
+                submitBtn.disabled = true;
+
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Here you would typically make an API call to your backend
+                // For demo purposes, we'll just show a success message
+                alert('If an account exists with this email, you will receive password reset instructions.');
+                
+                // Close the modal
+                closeForgotPassword();
+                
+                // Reset form
+                event.target.reset();
+            } catch (error) {
+                console.error('Password reset error:', error);
+                alert('Failed to send reset link. Please try again.');
+            } finally {
+                // Reset button state
+                btnText.style.display = 'block';
+                btnLoader.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Social Login Functions
+        async function handleGoogleLogin() {
+            try {
+                // Initialize Google Sign-In
+                const auth2 = await gapi.auth2.getAuthInstance();
+                const googleUser = await auth2.signIn();
+                
+                // Get user details
+                const profile = googleUser.getBasicProfile();
+                const userData = {
+                    id: profile.getId(),
+                    name: profile.getName(),
+                    email: profile.getEmail(),
+                    imageUrl: profile.getImageUrl()
+                };
+
+                // Here you would typically send this data to your backend
+                console.log('Google login successful:', userData);
+                
+                // For demo purposes, we'll simulate a successful login
+                handleSocialLoginSuccess(userData);
+            } catch (error) {
+                console.error('Google login error:', error);
+                alert('Google login failed. Please try again.');
+            }
+        }
+
+        async function handleFacebookLogin() {
+            try {
+                // Initialize Facebook login
+                const response = await new Promise((resolve, reject) => {
+                    FB.login(function(response) {
+                        if (response.authResponse) {
+                            resolve(response);
+                        } else {
+                            reject(new Error('User cancelled login or did not fully authorize.'));
+                        }
+                    }, {scope: 'email,public_profile'});
+                });
+
+                // Get user details
+                const userData = await new Promise((resolve, reject) => {
+                    FB.api('/me', {fields: 'name,email,picture'}, function(response) {
+                        if (response && !response.error) {
+                            resolve({
+                                id: response.id,
+                                name: response.name,
+                                email: response.email,
+                                imageUrl: response.picture?.data?.url
+                            });
+                        } else {
+                            reject(new Error('Failed to get user details'));
+                        }
+                    });
+                });
+
+                // Here you would typically send this data to your backend
+                console.log('Facebook login successful:', userData);
+                
+                // For demo purposes, we'll simulate a successful login
+                handleSocialLoginSuccess(userData);
+            } catch (error) {
+                console.error('Facebook login error:', error);
+                alert('Facebook login failed. Please try again.');
+            }
+        }
+
+        function handleSocialLoginSuccess(userData) {
+            // Close login modal
+            document.getElementById('userLoginModal').style.display = 'none';
+            
+            // Update UI with user info
+            currentUser = {
+                id: userData.id,
+                name: userData.name,
+                email: userData.email,
+                type: 'jobseeker' // Default to jobseeker for social login
+            };
+            
+            // Show job seeker dashboard
+            document.getElementById('jobSeekerDashboard').style.display = 'block';
+            updateJobSeekerDashboard(currentUser);
+            updateUserInterface(currentUser);
+        }
+
+        // Initialize Google Sign-In
+        function initGoogleSignIn() {
+            gapi.load('auth2', function() {
+                gapi.auth2.init({
+                    client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com' // Replace with your Google Client ID
+                });
+            });
+        }
+
+        // Initialize Facebook SDK
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId: 'YOUR_FACEBOOK_APP_ID', // Replace with your Facebook App ID
+                cookie: true,
+                xfbml: true,
+                version: 'v18.0'
+            });
+        };
+
+        // Load Facebook SDK
+        (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+        // Update social login button click handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            const googleBtn = document.querySelector('.google-login');
+            const facebookBtn = document.querySelector('.facebook-login');
+            
+            if (googleBtn) {
+                googleBtn.onclick = handleGoogleLogin;
+            }
+            
+            if (facebookBtn) {
+                facebookBtn.onclick = handleFacebookLogin;
+            }
+        });
+    </script>
+</body>
+</html> 
